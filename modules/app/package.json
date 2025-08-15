@@ -1,0 +1,16 @@
+{
+	"scripts": {
+		"start": "vite --logLevel info",
+		"build-staging": "vite build --root build --outDir ../dist-staging --logLevel info",
+		"build-prod": "vite build --root build --outDir ../dist-prod --logLevel info"
+	},
+	"devDependencies": {
+		"process": "^0.11.10",
+		"sass": "^1.34.0",
+		"vite": "^5.4.10"
+	},
+	"dependencies": {
+		"moment": "^2.29.4",
+		"showdown": "^2.1.0"
+	}
+}

@@ -12,7 +12,7 @@ trait CompanyRepository {
   def update(id: Long, op: Company => Company): Task[Company]
   def delete(id: Long): Task[Company]
   def getById(id: Long): Task[Option[Company]]
-  def getAll(): Task[List[Company]]
+  def getAll: Task[List[Company]]
 }
 
 class CompanyRepositoryLive(quill: Quill.Postgres[SnakeCase]) extends CompanyRepository {
@@ -58,32 +58,13 @@ class CompanyRepositoryLive(quill: Quill.Postgres[SnakeCase]) extends CompanyRep
       query[Company]
         .filter(_.id == lift(id))
 //        .take(1) // only adds "LIMIT 1" to the query, not necessary
-        .value
-    }
+//        .value
+    }.map(_.headOption)
 
-  override def getAll(): Task[List[Company]] = run(query[Company])
-
+  override def getAll: Task[List[Company]] = run(query[Company])
 }
 
-object CompanyRepositoryLive extends ZIOAppDefault {
-  val layer = ZLayer.fromFunction(new CompanyRepositoryLive(_))
-
-  val program = for {
-    repo        <- ZIO.service[CompanyRepository]
-    companyName <-
-      ZIO.succeed(s"Company-${UUID.randomUUID().toString}") // generate a random company name
-    slug        <- ZIO.succeed(Company.makeSlug(companyName))
-    _           <- repo.create(
-                     Company.dummy.copy(name = companyName, slug = slug, url = s"https://example.com/${slug}")
-                   ) // create a dummy company
-    list        <- repo.getAll() // get all companies
-    _           <- Console.printLine(s"Companies at the end: ${list.mkString(", ")}")
-  } yield ()
-
-  override def run = program
-    .provide(
-      CompanyRepositoryLive.layer,
-      Quill.Postgres.fromNamingStrategy[SnakeCase](SnakeCase),
-      Quill.DataSource.fromPrefix("rockthejvm.db") // provide the Quill context with
-    )
+object CompanyRepositoryLive {
+  val layer: ZLayer[Quill.Postgres[SnakeCase], Nothing, CompanyRepositoryLive] =
+    ZLayer.fromFunction(new CompanyRepositoryLive(_))
 }

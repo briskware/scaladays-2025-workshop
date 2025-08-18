@@ -1,6 +1,6 @@
 #!/bin/bash
 
 curl --include --request GET \
-  --header "Content-type: application/json" \
+  --header "Accept: application/json" \
   "http://localhost:8080/api/companies" \
-  && echo
+  | tail -1 | jq .

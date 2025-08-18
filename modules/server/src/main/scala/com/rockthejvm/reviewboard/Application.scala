@@ -1,6 +1,10 @@
 package com.rockthejvm.reviewboard
 
 import com.rockthejvm.reviewboard.http.controllers.CompanyController
+import com.rockthejvm.reviewboard.repositories.CompanyRepositoryLive
+import com.rockthejvm.reviewboard.services.CompanyServiceLive
+import io.getquill.SnakeCase
+import io.getquill.jdbczio.Quill
 import sttp.tapir.server.ziohttp.{ZioHttpInterpreter, ZioHttpServerOptions}
 import zio.*
 import zio.http.Server
@@ -26,7 +30,15 @@ object Application extends ZIOAppDefault {
       .tapError(e => Console.printLine(s"Failed to start server: ${e.getMessage}"))
       .provide(
         // controllers
-        CompanyController.live,
-        Server.default // ZIO HTTP server
+        CompanyController.layer,
+        // services
+        CompanyServiceLive.layer,
+        // repositories
+        CompanyRepositoryLive.layer,
+        // provide the Quill context with
+        Quill.DataSource.fromPrefix("rockthejvm.db"),
+        Quill.Postgres.fromNamingStrategy[SnakeCase](SnakeCase),
+        // ZIO HTTP server
+        Server.default
       )
 }

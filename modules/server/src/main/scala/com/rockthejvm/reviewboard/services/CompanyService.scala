@@ -11,7 +11,7 @@ import scala.io.StdIn
 
 trait CompanyService {
   def create(req: CreateCompanyRequest): Task[Company]
-  def getAll(): Task[List[Company]]
+  def getAll: Task[List[Company]]
   def getById(id: Long): Task[Option[Company]]
 }
 
@@ -27,29 +27,12 @@ class CompanyServiceLive(repository: CompanyRepository) extends CompanyService {
     repository.create(company)
   }
 
-  override def getAll(): Task[List[Company]] = repository.getAll()
+  override def getAll: Task[List[Company]] = repository.getAll
 
   override def getById(id: Long): Task[Option[Company]] = repository.getById(id)
 }
 
-object CompanyServiceLive extends ZIOAppDefault {
+object CompanyServiceLive {
   val layer: URLayer[CompanyRepository, CompanyService] =
     ZLayer.fromFunction(new CompanyServiceLive(_))
-
-  val program = for {
-    service   <- ZIO.service[CompanyService]
-    name      <- ZIO.attempt(StdIn.readLine("Enter company name: "))
-    _         <- service.create(CreateCompanyRequest(name, s"https://${Company.makeSlug(name)}.com"))
-    companies <- service.getAll()
-    _         <- Console.printLine(s"Companies: ${companies.mkString(", ")}")
-  } yield ()
-
-  override def run = program
-    .provide(
-      CompanyServiceLive.layer,
-      CompanyRepositoryLive.layer,                  // assuming you have a live layer for CompanyRepository
-      Quill.DataSource.fromPrefix("rockthejvm.db"), // provide the Quill context with
-      Quill.Postgres.fromNamingStrategy[SnakeCase](SnakeCase)
-    )
-
 }

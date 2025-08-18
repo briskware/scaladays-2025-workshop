@@ -53,5 +53,4 @@ class CompanyEndpoints {
       .name("create")
       .tag("companies")
       .description("Create a new company")
-
 }

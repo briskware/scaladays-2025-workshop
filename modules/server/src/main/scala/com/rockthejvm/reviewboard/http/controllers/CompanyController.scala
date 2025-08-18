@@ -2,32 +2,38 @@ package com.rockthejvm.reviewboard.http.controllers
 
 import com.rockthejvm.reviewboard.domain.Company
 import com.rockthejvm.reviewboard.http.endpoints.CompanyEndpoints
+import com.rockthejvm.reviewboard.http.errors.HttpError
+import com.rockthejvm.reviewboard.services.CompanyService
+import sttp.model.StatusCode
 import sttp.tapir.server.ServerEndpoint
 import zio.*
 
-class CompanyController extends CompanyEndpoints {
+class CompanyController private (service: CompanyService) extends CompanyEndpoints {
 
   // server = In => F[Out]
   // F can be Future, ZIO Task, Cats Effect IO, etc.
   val getAll: ServerEndpoint[Any, Task] = getAllEndpoint.serverLogic { _ =>
-    ZIO
-      .attempt(List(Company.dummy))
-      .either // this takes the error and converts it to a value
+    service.getAll.either // this takes the error and converts it to a value
   //  ZIO[R, E, A] => ZIO[R, Nothing, Either[E, A]
   }
 
   val getById: ServerEndpoint[Any, Task] = getByIdEndpoint.serverLogic { id =>
-    ZIO
-      .attempt(Company.dummy.copy(id = id)) // simulate fetching a company by ID
+    service
+      .getById(id)
+      .someOrFail(
+        new HttpError(
+          StatusCode.NotFound,
+          s"Company with id $id not found"
+        ) // simulate fetching a company by ID
+      )
+      .tapError(e =>
+        Console.printLine(s"Failed to fetch company by ID: $id, error: ${e.getMessage}")
+      )
       .either
   }
 
   val create: ServerEndpoint[Any, Task] = createEndpoint.serverLogic { request =>
-    ZIO
-      .attempt(
-        Company.dummy.copy(id = 42, name = request.name, url = request.url)
-      ) // simulate creating a company
-      .either
+    service.create(request).either
   }
 
   val routes: List[ServerEndpoint[Any, Task]] = List(
@@ -38,5 +44,6 @@ class CompanyController extends CompanyEndpoints {
 }
 
 object CompanyController {
-  val live: URLayer[Any, CompanyController] = ZLayer.succeed(new CompanyController)
+  val layer: URLayer[CompanyService, CompanyController] =
+    ZLayer.fromFunction(new CompanyController(_))
 }

@@ -39,7 +39,7 @@ class CompanyEndpoints {
       .tag("companies")
       .description("Get a company by ID")
 
-  // POST /api/company -> create a new company from a JSON body { name, url }
+  // POST /api/companies -> create a new company from a JSON body { name, url }
   val createEndpoint: Endpoint[Unit, CreateCompanyRequest, Throwable, Company, Any] =
     endpoint.post
       .prependIn("api")

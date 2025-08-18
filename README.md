@@ -15,6 +15,7 @@ The application is built with
 
 -   have a docker database ready - this means, for dev purposes, `docker compose up` in the root folder
 -   in another terminal `sbt`, then `project server`, then `~compile` to compile the server incrementally as you develop
+-   in the same terminal `runMain com.rockthejvm.reviewboard.Application` to start the server 
 -   in another terminal `sbt`, `project app` and `~fastOptJS` to compile the frontend
 -   in another terminal (that's 4 in total), go to the `app/` directory, run `npm install`
 -   still in terminal 4, run `npm run start` to start serving the page

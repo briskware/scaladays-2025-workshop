@@ -1,4 +1,4 @@
-package com.rockthejvm.reviewboard.playground
+package playground
 
 import zio.*
 

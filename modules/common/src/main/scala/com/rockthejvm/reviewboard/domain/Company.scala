@@ -1,7 +1,6 @@
 package com.rockthejvm.reviewboard.domain
 
-import zio.json.JsonCodec
-import zio.json.DeriveJsonCodec
+import zio.json.{DeriveJsonCodec, JsonCodec}
 
 final case class Company(
     id: Long,

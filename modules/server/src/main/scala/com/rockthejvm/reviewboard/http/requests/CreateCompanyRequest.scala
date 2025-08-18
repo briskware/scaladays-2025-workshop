@@ -4,5 +4,6 @@ import zio.json.JsonCodec
 
 case class CreateCompanyRequest (
     name: String,
-    url: String
+    url: String,
+    // TODO extra data
 ) derives JsonCodec

@@ -26,7 +26,7 @@ class CompanyEndpoints extends BaseEndpoint {
     baseEndpoint
       .get
       .in("companies" / path[String]("id")) // /companies
-      .out(jsonBody[Company])
+      .out(jsonBody[Option[Company]])
       .name("getById")
       .tag("companies")
       .description("get company by id")

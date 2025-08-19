@@ -6,6 +6,7 @@ import com.rockthejvm.reviewboard.services.{CompanyServiceLive, ReviewServiceLiv
 import com.stripe.service.ReviewService
 import io.getquill.SnakeCase
 import io.getquill.jdbczio.Quill
+import sttp.tapir.server.interceptor.cors.CORSInterceptor
 import sttp.tapir.server.ziohttp.{ZioHttpInterpreter, ZioHttpServerOptions}
 import zio.*
 import zio.http.Server
@@ -22,6 +23,10 @@ object Application extends ZIOAppDefault {
     _                 <- Server.install( // or Server.serve, but that blocks, so no need for ZIO.never below
                            ZioHttpInterpreter(
                              ZioHttpServerOptions.default
+                               // below is not needed, if you proxy via the vite.config.js
+//                               .appendInterceptor(
+//                                 CORSInterceptor.default // this allows for CORS from different origins
+//                               )
                            ).toHttp(companyController.routes ++ reviewController.routes)
                          )
     _                 <- Console.printLine("Server started on http://localhost:8080")

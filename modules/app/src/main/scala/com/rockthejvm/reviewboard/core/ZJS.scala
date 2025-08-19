@@ -11,13 +11,11 @@ object ZJS {
   extension [E, A](zio: ZIO[BackendClient, E, A])
     def emitTo(eventBus: EventBus[A]) =
       Unsafe.unsafely {
-        Runtime.default.unsafe.fork(
+        Runtime.default.unsafe.fork {
           zio
-            .tap { value =>
-              ZIO.attempt(eventBus.emit(value))
-            }
+            .tap(value => ZIO.attempt(eventBus.emit(value)))
             .provide(BackendClientLive.layer)
-        )
+        }
       }
 
   extension [I, E <: Throwable, O](endpoint: Endpoint[Unit, I, E, O, Any])

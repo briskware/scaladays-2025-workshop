@@ -27,7 +27,10 @@ object CompaniesPage {
       - execute the ZIO
       - tap the ZIO such that when it has a value, you emit it into the event bus
    */
-  def getCompaniesNaive(): Fiber.Runtime[Throwable, List[Company]] = {
+  // TODO - replace the dummy company with a reactive element, which reads from the event bus
+  // TODO - refactor the backend calls as necessary
+
+  def getCompaniesNaive_v1(): Fiber.Runtime[Throwable, List[Company]] = {
     val backend      = FetchZioBackend()       // tapir type
     val interpreter  = SttpClientInterpreter() // tapir type
     val endpoints    = new CompanyEndpoints()  // can instantiate the endpoints from the common module
@@ -40,6 +43,7 @@ object CompaniesPage {
       .send(request) // this returns a ZIO[Response, Throwable]
       .map(_.body)
       .absolve       // Task[List[Company]] // this converts the Either to a Task[List[Company]]
+
     Unsafe.unsafely {
       Runtime.default.unsafe.fork(
         companiesZIO.tap { companies =>
@@ -51,22 +55,24 @@ object CompaniesPage {
     }
   }
 
-  def getCompaniesNaive_v2() = {
+  def getCompaniesNaive_v2(): Fiber.Runtime[Throwable, List[Company]] = {
     val companiesZIO = for {
       client    <- ZIO.service[BackendClient]
       companies <- client.call(client.companies.getAllEndpoint)(())
     } yield companies
 
     Unsafe.unsafely {
-      companiesZIO
-        .tap { companies =>
-          ZIO.attempt(companiesBus.emit(companies))
-        }
-        .provide(BackendClientLive.layer)
+      Runtime.default.unsafe.fork(
+        companiesZIO
+          .tap { companies =>
+            ZIO.attempt(companiesBus.emit(companies))
+          }
+          .provide(BackendClientLive.layer)
+      )
     }
   }
 
-  def getCompaniesNaive_v3() = {
+  def getCompaniesNaive_v3(): Fiber.Runtime[Any, List[Company]] = {
     val companiesZIO = for {
       client    <- ZIO.service[BackendClient]
       companies <- client.call(client.companies.getAllEndpoint)(())
@@ -74,18 +80,15 @@ object CompaniesPage {
     companiesZIO.emitTo(companiesBus)
   }
 
-  def getCompaniesNaive_v4() = {
+  def getCompaniesNaive_v4(): Fiber.Runtime[Any, List[Company]] = {
     val companiesZIO = backendCall(_.companies.getAllEndpoint((())))
     companiesZIO.emitTo(companiesBus)
   }
 
-  // TODO - replace the dummy company with a reactive element, which reads from the event bus
-  // TODO - refactor the backend calls as necessary
-
   def apply() =
     sectionTag(
-      onMountCallback(_ => getCompaniesNaive_v4()),
-//      onMountCallback(_ => backendCall(_.companies.getAllEndpoint(()).emitTo(companiesBus))),
+//      onMountCallback(_ => getCompaniesNaive_v4()),
+      onMountCallback(_ => backendCall(_.companies.getAllEndpoint((()))).emitTo(companiesBus)),
       cls := "section-1",
       div(
         cls := "container company-list-hero",

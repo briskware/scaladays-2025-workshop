@@ -21,6 +21,9 @@ object Router {
           (pathEnd | path("companies")) {
             CompaniesPage()
           },
+          path("company" / long) { id =>
+            CompanyPage(id)
+          },
           noneMatched {
             NotFoundPage()
           }

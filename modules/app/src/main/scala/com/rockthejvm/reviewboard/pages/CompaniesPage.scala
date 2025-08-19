@@ -4,11 +4,13 @@ import com.raquo.laminar.api.L.{*, given}
 import org.scalajs.dom
 import zio.*
 import com.rockthejvm.reviewboard.components.*
+import com.rockthejvm.reviewboard.core.{BackendClient, BackendClientLive}
 import com.rockthejvm.reviewboard.domain.*
 import com.rockthejvm.reviewboard.http.endpoints.CompanyEndpoints
 import sttp.model.Uri
 import sttp.client3.impl.zio.FetchZioBackend
 import sttp.tapir.client.sttp.SttpClientInterpreter
+import com.rockthejvm.reviewboard.core.ZJS.*
 
 object CompaniesPage {
 
@@ -31,7 +33,7 @@ object CompaniesPage {
     val endpoints    = new CompanyEndpoints()  // can instantiate the endpoints from the common module
     val endpoint     = interpreter.toRequestThrowDecodeFailures(
       endpoints.getAllEndpoint, // the endpoint definition,
-      Uri.parse("/").toOption   // the URL of the server
+      Uri.parse("/").toOption   // the URL of the server (proxied via vite)
     )
     val request      = endpoint(())            // the request is empty (unit), as per the endpoint definition
     val companiesZIO = backend
@@ -49,12 +51,41 @@ object CompaniesPage {
     }
   }
 
+  def getCompaniesNaive_v2() = {
+    val companiesZIO = for {
+      client    <- ZIO.service[BackendClient]
+      companies <- client.call(client.companies.getAllEndpoint)(())
+    } yield companies
+
+    Unsafe.unsafely {
+      companiesZIO
+        .tap { companies =>
+          ZIO.attempt(companiesBus.emit(companies))
+        }
+        .provide(BackendClientLive.layer)
+    }
+  }
+
+  def getCompaniesNaive_v3() = {
+    val companiesZIO = for {
+      client    <- ZIO.service[BackendClient]
+      companies <- client.call(client.companies.getAllEndpoint)(())
+    } yield companies
+    companiesZIO.emitTo(companiesBus)
+  }
+
+  def getCompaniesNaive_v4() = {
+    val companiesZIO = backendCall(_.companies.getAllEndpoint((())))
+    companiesZIO.emitTo(companiesBus)
+  }
+
   // TODO - replace the dummy company with a reactive element, which reads from the event bus
   // TODO - refactor the backend calls as necessary
 
   def apply() =
     sectionTag(
-      onMountCallback(_ => getCompaniesNaive()),
+      onMountCallback(_ => getCompaniesNaive_v4()),
+//      onMountCallback(_ => backendCall(_.companies.getAllEndpoint(()).emitTo(companiesBus))),
       cls := "section-1",
       div(
         cls := "container company-list-hero",

@@ -5,7 +5,7 @@ import zio.json.DeriveJsonCodec
 import java.time.Instant
 
 final case class Review(
-    id: Long, // PK
+    id: Long,        // PK
     companyId: Long,
     userId: Long,    // FK
     management: Int, // 1-5

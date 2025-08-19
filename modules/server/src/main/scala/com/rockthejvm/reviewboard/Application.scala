@@ -1,8 +1,9 @@
 package com.rockthejvm.reviewboard
 
-import com.rockthejvm.reviewboard.http.controllers.CompanyController
-import com.rockthejvm.reviewboard.repositories.CompanyRepositoryLive
-import com.rockthejvm.reviewboard.services.CompanyServiceLive
+import com.rockthejvm.reviewboard.http.controllers.{CompanyController, ReviewController}
+import com.rockthejvm.reviewboard.repositories.{CompanyRepositoryLive, ReviewRepositoryLive}
+import com.rockthejvm.reviewboard.services.{CompanyServiceLive, ReviewServiceLive}
+import com.stripe.service.ReviewService
 import io.getquill.SnakeCase
 import io.getquill.jdbczio.Quill
 import sttp.tapir.server.ziohttp.{ZioHttpInterpreter, ZioHttpServerOptions}
@@ -13,16 +14,18 @@ import java.io.IOException
 
 object Application extends ZIOAppDefault {
 
-  private val startServer: ZIO[Any & Server & CompanyController, IOException, Unit] = for {
-    controller <- ZIO.service[CompanyController]
-    _          <- ZIO.logInfo("Starting server...")
-    _          <- Server.install( // or Server.serve, but that blocks, so no need for ZIO.never below
-                    ZioHttpInterpreter(
-                      ZioHttpServerOptions.default
-                    ).toHttp(controller.routes)
-                  )
-    _          <- Console.printLine("Server started on http://localhost:8080")
-    _          <- ZIO.never
+  private val startServer
+      : ZIO[Any & Server & CompanyController & ReviewController, IOException, Unit] = for {
+    companyController <- ZIO.service[CompanyController]
+    reviewController  <- ZIO.service[ReviewController]
+    _                 <- ZIO.logInfo("Starting server...")
+    _                 <- Server.install( // or Server.serve, but that blocks, so no need for ZIO.never below
+                           ZioHttpInterpreter(
+                             ZioHttpServerOptions.default
+                           ).toHttp(companyController.routes)
+                         )
+    _                 <- Console.printLine("Server started on http://localhost:8080")
+    _                 <- ZIO.never
   } yield ()
 
   override def run: Task[Unit] =
@@ -31,10 +34,13 @@ object Application extends ZIOAppDefault {
       .provide(
         // controllers
         CompanyController.layer,
+        ReviewController.layer,
         // services
         CompanyServiceLive.layer,
+        ReviewServiceLive.layer,
         // repositories
         CompanyRepositoryLive.layer,
+        ReviewRepositoryLive.layer,
         // provide the Quill context with
         Quill.DataSource.fromPrefix("rockthejvm.db"),
         Quill.Postgres.fromNamingStrategy[SnakeCase](SnakeCase),

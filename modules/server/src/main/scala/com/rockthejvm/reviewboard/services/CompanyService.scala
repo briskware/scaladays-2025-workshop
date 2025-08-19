@@ -2,7 +2,7 @@ package com.rockthejvm.reviewboard.services
 
 import zio.*
 import com.rockthejvm.reviewboard.domain.Company
-import com.rockthejvm.reviewboard.repositories.{CompanyRepository, CompanyRepositoryLive}
+import com.rockthejvm.reviewboard.repositories.CompanyRepository
 import com.rockthejvm.reviewboard.http.requests.CreateCompanyRequest
 import io.getquill.SnakeCase
 import io.getquill.jdbczio.Quill

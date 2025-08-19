@@ -5,8 +5,6 @@ import zio.*
 import io.getquill.*
 import io.getquill.jdbczio.Quill
 
-import java.util.UUID
-
 trait CompanyRepository {
   def create(company: Company): Task[Company]
   def update(id: Long, op: Company => Company): Task[Company]
@@ -65,6 +63,6 @@ class CompanyRepositoryLive(quill: Quill.Postgres[SnakeCase]) extends CompanyRep
 }
 
 object CompanyRepositoryLive {
-  val layer: ZLayer[Quill.Postgres[SnakeCase], Nothing, CompanyRepositoryLive] =
+  val layer: ZLayer[Quill.Postgres[SnakeCase], Nothing, CompanyRepository] =
     ZLayer.fromFunction(new CompanyRepositoryLive(_))
 }

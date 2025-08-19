@@ -12,7 +12,7 @@ object CompanyRepositorySpec extends ZIOSpecDefault, RepositorySpec {
 
   override val initScript = "companies.sql"
 
-  override def spec =
+  override def spec: Spec[Scope, Throwable] =
     suite("CompanyRepositorySpec")(
       test("create company") {
         val program = for {
@@ -20,13 +20,18 @@ object CompanyRepositorySpec extends ZIOSpecDefault, RepositorySpec {
           company <- repo.create(Company.dummy)
         } yield company
         program.must(_ == Company.dummy)
+      },
+      test("retrieve all companies") {
+        for {
+          repo      <- ZIO.service[CompanyRepository]
+          companies <- repo.getAll
+        } yield assert(companies)(equalTo(List(Company.dummy)))
+        // program.must(_ == List(Company.dummy))
       }
-    ).provide(
+    ).provideSomeShared[Scope](
       CompanyRepositoryLive.layer,
       Quill.Postgres.fromNamingStrategy[SnakeCase](SnakeCase),
       // test datasource layer using a test docker container here
-      dataSourceLayer,
-      // infra
-      Scope.default
-    )
+      dataSourceLayer
+    ) @@ TestAspect.sequential
 }

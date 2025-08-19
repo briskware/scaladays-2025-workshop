@@ -13,6 +13,7 @@ trait CompanyRepository {
   def delete(id: Long): Task[Company]
   def getById(id: Long): Task[Option[Company]]
   def getAll(): Task[List[Company]]
+  def upgrade(id: Long): Task[Company]
 }
 
 class CompanyRepositoryLive(quill: Quill.Postgres[SnakeCase]) extends CompanyRepository {
@@ -60,9 +61,12 @@ class CompanyRepositoryLive(quill: Quill.Postgres[SnakeCase]) extends CompanyRep
         .take(1)
         .value
     }
+
+  override def upgrade(id: Long) =
+    update(id, _.copy(premium = true))
 }
 
-object CompanyRepositoryLive extends ZIOAppDefault {
+object CompanyRepositoryLive {
 
   val layer = ZLayer.fromFunction(new CompanyRepositoryLive(_))
 
@@ -73,7 +77,7 @@ object CompanyRepositoryLive extends ZIOAppDefault {
     _ <- Console.printLine(s"Found companies: $list")
   } yield ()
 
-  override def run =
+  def run =
     program.provide(
       layer,
       // infra

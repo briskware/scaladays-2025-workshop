@@ -41,4 +41,24 @@ class CompanyEndpoints extends BaseEndpoint {
       .name("create")
       .tag("companies")
       .description("create new company")
+
+  val createPremiumEndpoint =
+    baseEndpoint
+      .post
+      .in("companies" / "premium")
+      .in(jsonBody[CreateCompanyRequest])
+      .out(plainBody[String])
+      .name("createPremium")
+      .tag("companies")
+      .description("create new PREMIUM company with a tag!!!")
+
+
+  val webhookEndpoint =
+    baseEndpoint
+      .in("webhook")
+      .post
+      .in(stringBody) // not jsonBody[String] because I will parse the webhook payload with the Stripe API
+      .in(header[String]("Stripe-Signature"))
 }
+
+

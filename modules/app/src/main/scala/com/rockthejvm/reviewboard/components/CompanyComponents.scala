@@ -56,7 +56,13 @@ object CompanyComponents {
   def renderCompany(company: Company) =
     div(
       cls := "jvm-recent-companies-cards position-relative", // Added position-relative for badge positioning
-      // TODO add Premium badge in corner
+      Option(company.premium).filter(identity).toList.map(_ =>
+        div(
+          cls := "premium-badge",
+          styleAttr := "position: absolute; top: 10px; right: 10px; background-color: #FFD700; color: #000; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; z-index: 1;",
+          "PREMIUM"
+        )
+      ),
       div(
         cls := "jvm-recent-companies-card-img",
         CompanyComponents.renderCompanyPicture(company)

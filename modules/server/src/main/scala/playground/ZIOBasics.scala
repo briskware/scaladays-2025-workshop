@@ -5,7 +5,7 @@ import zio.*
 import java.util.UUID
 import scala.io.StdIn
 
-object ZIOBasics extends ZIOAppDefault {
+object ZIOBasics {
 
   // ZIO[-R, +E, +A] ~~~ R => Either[E, A]
 
@@ -152,7 +152,7 @@ object ZIOBasics extends ZIOAppDefault {
   } yield ()
 
   // 2. provide all the layers in whatever order, the ZIO runtime will take care to pass the right deps
-  override def run = program.provide(
+  def run = program.provide(
     // this takes care to build the right instances AND pass the right dependencies
     Newsletter.smartConstructor,
     EmailService.smartConstructor,

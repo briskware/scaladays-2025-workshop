@@ -2,8 +2,8 @@ package com.rockthejvm.reviewboard
 
 import zio.*
 import com.rockthejvm.reviewboard.http.controllers.*
-import com.rockthejvm.reviewboard.repositories.{CompanyRepositoryLive, ReviewRepositoryLive}
-import com.rockthejvm.reviewboard.service.{CompanyServiceLive, ReviewServiceLive}
+import com.rockthejvm.reviewboard.repositories.*
+import com.rockthejvm.reviewboard.service.*
 import io.getquill.SnakeCase
 import io.getquill.jdbczio.Quill
 import sttp.tapir.server.interceptor.cors.CORSInterceptor
@@ -32,6 +32,7 @@ object Application extends ZIOAppDefault {
     // service
     CompanyServiceLive.layer,
     ReviewServiceLive.layer,
+    PaymentServiceLive.layer,
     // repo
     CompanyRepositoryLive.layer,
     ReviewRepositoryLive.layer,

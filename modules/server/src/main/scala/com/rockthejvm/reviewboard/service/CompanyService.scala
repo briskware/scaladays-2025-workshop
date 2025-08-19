@@ -10,6 +10,7 @@ trait CompanyService {
   def create(req: CreateCompanyRequest): Task[Company]
   def getAll(): Task[List[Company]]
   def getById(id: Long): Task[Option[Company]]
+  def upgrade(id: Long): Task[Company]
 }
 
 class CompanyServiceLive private (repo: CompanyRepository) extends CompanyService {
@@ -28,6 +29,9 @@ class CompanyServiceLive private (repo: CompanyRepository) extends CompanyServic
 
   def getById(id: Long): Task[Option[Company]] =
     repo.getById(id)
+
+  override def upgrade(id: Long) =
+    repo.upgrade(id)
 }
 
 object CompanyServiceLive {

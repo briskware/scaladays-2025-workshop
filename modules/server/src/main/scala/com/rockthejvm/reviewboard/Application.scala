@@ -6,6 +6,7 @@ import com.rockthejvm.reviewboard.repositories.{CompanyRepositoryLive, ReviewRep
 import com.rockthejvm.reviewboard.service.{CompanyServiceLive, ReviewServiceLive}
 import io.getquill.SnakeCase
 import io.getquill.jdbczio.Quill
+import sttp.tapir.server.interceptor.cors.CORSInterceptor
 import sttp.tapir.server.ziohttp.{ZioHttpInterpreter, ZioHttpServerOptions}
 import zio.http.Server
 
@@ -17,7 +18,9 @@ object Application extends ZIOAppDefault {
     _ <- Console.printLine("Rock the JVM! Bootstrapping...")
     _ <- Server.serve(
       ZioHttpInterpreter(
-        ZioHttpServerOptions.default
+        ZioHttpServerOptions.default.appendInterceptor(
+          CORSInterceptor.default
+        )
       ).toHttp(companies.routes ++ reviews.routes)
     )
   } yield ()

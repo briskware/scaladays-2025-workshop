@@ -20,7 +20,8 @@ object CompanyPage {
 
   def apply(id: Long) =
     div(
-      cls := "container-fluid the-rock"
+      cls := "container-fluid the-rock",
+      render(Company.dummy)
       /*
         TODO
         - run a backend call to fetch the company with this id

@@ -25,18 +25,15 @@ object CompanyRepositorySpec extends ZIOSpecDefault with RepositorySpec {
       test("retrieve all companies") {
         val program = for {
           repo <- ZIO.service[CompanyRepository]
-          _ <- repo.create(Company.dummy)
           companies <- repo.getAll()
         } yield companies
 
         program.must(_ == List(Company.dummy))
       }
-    ).provide(
+    ).provideSomeShared[Scope](
       CompanyRepositoryLive.layer,
       Quill.Postgres.fromNamingStrategy[SnakeCase](SnakeCase),
       // data source is different - fetched from the test container
       dataSourceLayer,
-      // infra
-      Scope.default
-    )
+    ) @@ TestAspect.sequential
 }

@@ -7,7 +7,7 @@ import frontroute.*
 import com.rockthejvm.reviewboard.pages.*
 
 object Router {
-  val externalUrlBus = EventBus[String]()
+  val externalUrlBus = EventBus[String]() // event bus of URLs that the browser pushed to ME
 
   def apply() =
     mainTag(
@@ -18,8 +18,11 @@ object Router {
       routes(
         div(
           cls := "container-fluid",
-          (pathEnd | path("companies")) {
+          (pathEnd | path("companies")) { // at / or /companies
             CompaniesPage()
+          },
+          path("company" / long) { id =>
+            CompanyPage(id)
           },
           noneMatched {
             NotFoundPage()

@@ -10,3 +10,8 @@ curl --include --request GET \
   --header "Accept: application/json" \
   "http://localhost:8080/api/companies/$id" \
   && echo
+
+curl --include --request GET \
+  --header "Accept: application/json" \
+  "http://localhost:8080/api/reviews/company/$id" \
+  && echo

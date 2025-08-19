@@ -22,7 +22,7 @@ object Application extends ZIOAppDefault {
     _                 <- Server.install( // or Server.serve, but that blocks, so no need for ZIO.never below
                            ZioHttpInterpreter(
                              ZioHttpServerOptions.default
-                           ).toHttp(companyController.routes)
+                           ).toHttp(companyController.routes ++ reviewController.routes)
                          )
     _                 <- Console.printLine("Server started on http://localhost:8080")
     _                 <- ZIO.never
